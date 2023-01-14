@@ -1,7 +1,7 @@
 import Head from "next/head";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Inter } from "@next/font/google";
-import { ImSearch } from "react-icons/im";
+import { ImNewTab, ImSearch } from "react-icons/im";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -10,10 +10,19 @@ export default function Home() {
   const [metadata, setMetadata] = useState<any>(null);
   const [video, setVideo] = useState<any>(null);
   const [audio, setAudio] = useState<any>(null);
+  const [allFormats, setAllFormats] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [updateVideo, setUpdateVideo] = useState(0);
+  const [quality, setQuality] = useState("");
+
+  let qualities: any = [];
 
   const getVideo = () => {
-    console.log("fetching", link);
+    qualities = [];
+    setMetadata(null);
+    setVideo(null);
+    setAudio(null);
+    setAllFormats(null);
     setLoading(true);
     fetch("/api/getVideo", {
       method: "POST",
@@ -25,24 +34,45 @@ export default function Home() {
       .then((res) => res.json())
       .then((data) => {
         setLoading(false);
-        const metadata = data.response.videoDetails;
-        const video = data.response.streamingData.formats[0];
-        const audio = data.response.streamingData.adaptiveFormats.find(
+        console.log(data);
+
+        setMetadata(data.response.videoDetails);
+        setAllFormats(data.response.streamingData.adaptiveFormats);
+        const defaultVideo = data.response.streamingData.adaptiveFormats.find(
           (format: any) => {
-            return format.mimeType.includes("audio/mp4");
+            return format.mimeType.includes("video/mp4");
           }
         );
-        console.log("metadata", metadata);
-        console.log("video", video);
-        console.log("audio", audio);
-
-        setMetadata(metadata);
-        setVideo(video);
-        setAudio(audio);
+        setVideo(defaultVideo);
+        setQuality(defaultVideo.qualityLabel);
+        setAudio(
+          data.response.streamingData.adaptiveFormats.find((format: any) => {
+            return format.mimeType.includes("audio/mp4");
+          })
+        );
       })
       .catch((err) => {
         console.log("error", err);
       });
+  };
+
+  console.log("video", video, video?.qualityLabel);
+
+  useEffect(() => {
+    setVideo(
+      allFormats?.find(
+        (format: any) =>
+          format.mimeType.includes("video/mp4") &&
+          format.qualityLabel == quality
+      )
+    );
+  }, [updateVideo]);
+
+  const parseSeconds = (d: number) => {
+    const h = String(Math.floor(d / 3600)).padStart(2, "0");
+    const m = String(Math.floor((d % 3600) / 60)).padStart(2, "0");
+    const s = String(Math.floor((d % 3600) % 60)).padStart(2, "0");
+    return `${h}:${m}:${s}`;
   };
 
   return (
@@ -84,30 +114,79 @@ export default function Home() {
         </div>
         <div
           className={
-            "w-full mt-10 grid grid-rows-2 md:grid-cols-2 md:grid-rows-1 gap-10 duration-500 ease-in-out " +
+            "w-full mt-10 grid md:grid-cols-2 md:grid-rows-1 gap-10 duration-500 ease-in-out " +
             (!loading && !(video && audio && metadata)
               ? "max-h-0 overflow-y-hidden"
-              : "max-h-[500px]")
+              : "max-h-[1000px]")
           }
         >
-          <div className="w-full h-full p-2 gradient-red">
-            <div className="w-full h-full bg-dark-red p-4">
-              <h3 className="text-lg font-medium text-white">
+          <div className="w-full p-2 gradient-red">
+            <div className="w-full h-full bg-dark-red p-5">
+              <h3 className="text-2xl font-bold text-white">
                 {metadata?.title}
               </h3>
-              <p className="text-sm text-light-red">
-                {metadata?.author}
-                <br />
-                {metadata?.lengthSeconds} seconds
-              </p>
+              <div className="h-1 w-20 bg-white opacity-50 my-4"></div>
+              <ul className="text-lg text-white">
+                <li className="flex">
+                  Channel:
+                  <a
+                    href={
+                      "https://www.youtube.com/channel/" + metadata?.channelId
+                    }
+                    className="ml-1 text-lg text-light-red underline flex items-center justify-start"
+                    target="_blank"
+                    rel="noreferrer noopener"
+                  >
+                    {metadata?.author}
+                    <ImNewTab className="inline-block ml-1 mb-1" />
+                  </a>
+                </li>
+                <li>
+                  Views:{" "}
+                  <span className="text-light-red">{metadata?.viewCount}</span>
+                </li>
+                <li>
+                  Duration:{" "}
+                  <span className="text-light-red">
+                    {parseSeconds(metadata?.lengthSeconds)}
+                  </span>
+                </li>
+                <li>
+                  Video quality:{" "}
+                  <select
+                    className="text-light-red rounded p-2 bg-dark-red"
+                    onChange={(e) => {
+                      setVideo(null);
+                      setQuality(e.target.value);
+                      setUpdateVideo(updateVideo + 1);
+                    }}
+                  >
+                    {allFormats?.map((format: any, index: number) => {
+                      if (
+                        format.mimeType.includes("video/mp4") &&
+                        !qualities.includes(format.quality)
+                      ) {
+                        qualities.push(format.quality);
+                        return (
+                          <option key={index} className="p-1">
+                            {format.qualityLabel}
+                          </option>
+                        );
+                      }
+                    })}
+                  </select>
+                </li>
+              </ul>
             </div>
           </div>
-          <div className="w-full h-full">
+          <div className="w-full">
             {video && (
               <div className="flex flex-col mb-7">
-                <h4 className="text-2xl font-semibold text-white">MP4 Video</h4>
+                <h4 className="text-2xl font-semibold text-white mb-1">
+                  MP4 Video ({video.width}x{video.height})
+                </h4>
                 <div className="p-2 gradient-red">
-                  <video controls>
+                  <video controls className="w-full h-full">
                     <source src={video.url} type="video/mp4" />
                   </video>
                 </div>
@@ -115,7 +194,9 @@ export default function Home() {
             )}
             {audio && (
               <div className="flex flex-col">
-                <h4 className="text-2xl font-semibold text-white">M4A Audio</h4>
+                <h4 className="text-2xl font-semibold text-white mb-1">
+                  M4A Audio
+                </h4>
                 <div className="p-2 gradient-red rounded-full">
                   <audio controls className="w-full">
                     <source src={audio.url} type="audio/mp4" />
