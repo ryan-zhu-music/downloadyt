@@ -38,39 +38,42 @@ export default function Home() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ url: link }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-        data = JSON.parse(data.response);
-        console.log(data);
-        setLoading(false);
-        setError("");
-        setMetadata(data.videoDetails);
-        setAllFormats(data.streamingData.adaptiveFormats);
-        const defaultVideo = data.streamingData.adaptiveFormats.find(
-          (format: any) => {
-            return format.mimeType.includes(videoType.format);
-          }
-        );
-        setVideo(defaultVideo);
-        setVideoType({
-          quality: defaultVideo.qualityLabel,
-          format: "video/mp4",
+    }).then((res) => {
+      console.log("res", res);
+      res
+        .json()
+        .then((data) => {
+          console.log(data);
+          data = JSON.parse(data.response);
+          console.log(data);
+          setLoading(false);
+          setError("");
+          setMetadata(data.videoDetails);
+          setAllFormats(data.streamingData.adaptiveFormats);
+          const defaultVideo = data.streamingData.adaptiveFormats.find(
+            (format: any) => {
+              return format.mimeType.includes(videoType.format);
+            }
+          );
+          setVideo(defaultVideo);
+          setVideoType({
+            quality: defaultVideo.qualityLabel,
+            format: "video/mp4",
+          });
+          setAudio(
+            data.streamingData.adaptiveFormats.find((format: any) => {
+              return format.mimeType.includes(audioType);
+            })
+          );
+        })
+        .catch((err) => {
+          console.log("Error:", err);
+          setLoading(false);
+          setError(
+            "Something went wrong. Please try again later, or try a different video."
+          );
         });
-        setAudio(
-          data.streamingData.adaptiveFormats.find((format: any) => {
-            return format.mimeType.includes(audioType);
-          })
-        );
-      })
-      .catch((err) => {
-        console.log("Error:", err);
-        setLoading(false);
-        setError(
-          "Something went wrong. Please try again later, or try a different video."
-        );
-      });
+    });
   };
 
   useEffect(() => {
