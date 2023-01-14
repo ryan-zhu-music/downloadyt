@@ -10,7 +10,7 @@ export default function Document() {
           content="Download any YouTube video in video (mp4) or audio (m4a) format instantly!"
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="assets/favicon.ico" />
         <meta name="author" content="Ryan Zhu" />
 
         <meta property="og:url" content="https://downloadyt.vercel.app/" />
@@ -23,7 +23,7 @@ export default function Document() {
         />
         <meta property="og:locale" content="en_US" />
 
-        <meta property="og:image" content="/downloadyt.png" />
+        <meta property="og:image" content="assets/downloadyt.png" />
         <meta property="og:image:alt" content="DownloadYT" />
         <meta property="og:image:width" content="512" />
         <meta property="og:image:height" content="512" />
@@ -35,7 +35,7 @@ export default function Document() {
         <meta name="msapplication-navbutton-color" content="#B93437" />
         <meta name="apple-mobile-web-app-status-bar-style" content="#B93437" />
         <meta name="msapplication-TileColor" content="#B93437" />
-        <meta name="msapplication-TileImage" content="/favicon.ico" />
+        <meta name="msapplication-TileImage" content="assets/favicon.ico" />
       </Head>
       <body>
         <Main />

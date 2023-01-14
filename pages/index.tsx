@@ -99,10 +99,6 @@ export default function Home() {
     );
   }, [audioType]);
 
-  console.log("video", video);
-  console.log("audio", audio);
-  console.log("allFormats", allFormats);
-
   const parseSeconds = (d: number) => {
     const h = String(Math.floor(d / 3600)).padStart(2, "0");
     const m = String(Math.floor((d % 3600) / 60)).padStart(2, "0");
@@ -119,7 +115,7 @@ export default function Home() {
           content="Download any YouTube video in video (mp4) or audio (m4a) format instantly!"
         />
       </Head>
-      <main className="w-screen min-h-screen flex flex-col items-center justify-center bg-[url('/background.png')] bg-cover bg-center px-10 md:px-20 lg:px-32 pt-32">
+      <main className="w-screen min-h-screen flex flex-col items-center justify-center bg-[url('/assets/background.png')] bg-cover bg-center px-10 md:px-20 lg:px-32 pt-32">
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold gradient-red text-transparent !bg-clip-text uppercase text-center">
           Download<span className="text-white">YT</span>
         </h1>
