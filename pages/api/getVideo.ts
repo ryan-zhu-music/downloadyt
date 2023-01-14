@@ -3,7 +3,6 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 type Data = {
   response: any;
-  error?: any;
 };
 
 export default function handler(
@@ -30,14 +29,13 @@ export default function handler(
     })
       .then((response) => response.text())
       .then((data) => {
-        try {
-          data =
-            data.split("var ytInitialPlayerResponse = ")[1].split("}}}};")[0] +
-            "}}}}";
-          res.status(200).json({ response: data });
-        } catch (error: any) {
-          res.status(400).json({ response: data, error: error });
-        }
+        data =
+          data.split("var ytInitialPlayerResponse = ")[1].split("}}}};")[0] +
+          "}}}}";
+        res.status(200).json({ response: data });
+      })
+      .catch((error) => {
+        res.status(400).json({ response: error });
       });
   } else {
     res.status(400).json({ response: "Invalid url" });
