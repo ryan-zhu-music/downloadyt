@@ -12,8 +12,11 @@ export default function Home() {
   const [audio, setAudio] = useState<any>(null);
   const [allFormats, setAllFormats] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [updateVideo, setUpdateVideo] = useState(0);
-  const [quality, setQuality] = useState("");
+  const [videoType, setVideoType] = useState({
+    quality: "",
+    format: "video/mp4",
+  });
+  const [audioType, setAudioType] = useState("audio/mp4");
 
   let qualities: any = [];
 
@@ -40,14 +43,17 @@ export default function Home() {
         setAllFormats(data.response.streamingData.adaptiveFormats);
         const defaultVideo = data.response.streamingData.adaptiveFormats.find(
           (format: any) => {
-            return format.mimeType.includes("video/mp4");
+            return format.mimeType.includes(videoType.format);
           }
         );
         setVideo(defaultVideo);
-        setQuality(defaultVideo.qualityLabel);
+        setVideoType({
+          quality: defaultVideo.qualityLabel,
+          format: "video/mp4",
+        });
         setAudio(
           data.response.streamingData.adaptiveFormats.find((format: any) => {
-            return format.mimeType.includes("audio/mp4");
+            return format.mimeType.includes(audioType);
           })
         );
       })
@@ -62,11 +68,17 @@ export default function Home() {
     setVideo(
       allFormats?.find(
         (format: any) =>
-          format.mimeType.includes("video/mp4") &&
-          format.qualityLabel == quality
+          format.mimeType.includes(videoType.format) &&
+          format.qualityLabel == videoType.quality
       )
     );
-  }, [updateVideo]);
+  }, [videoType]);
+
+  useEffect(() => {
+    setAudio(
+      allFormats?.find((format: any) => format.mimeType.includes(audioType))
+    );
+  }, [audioType]);
 
   const parseSeconds = (d: number) => {
     const h = String(Math.floor(d / 3600)).padStart(2, "0");
@@ -154,11 +166,13 @@ export default function Home() {
                 <li>
                   Video quality:{" "}
                   <select
-                    className="text-light-red rounded p-2 bg-dark-red"
+                    className="text-light-red rounded ml-2 p-2 bg-dark-red"
                     onChange={(e) => {
                       setVideo(null);
-                      setQuality(e.target.value);
-                      setUpdateVideo(updateVideo + 1);
+                      setVideoType({
+                        quality: e.target.value,
+                        format: videoType.format,
+                      });
                     }}
                   >
                     {allFormats?.map((format: any, index: number) => {
@@ -175,6 +189,86 @@ export default function Home() {
                       }
                     })}
                   </select>
+                </li>
+                <li>
+                  Video format:{" "}
+                  <form className="flex flex-col justify-center items-start">
+                    <div className="flex">
+                      <input
+                        className="ml-6"
+                        type="radio"
+                        name="Video format"
+                        id="mp4"
+                        value="mp4"
+                        onChange={() => {
+                          setVideo(null);
+                          setVideoType({
+                            quality: videoType.quality,
+                            format: "video/mp4",
+                          });
+                        }}
+                      />
+                      <label className="ml-1" htmlFor="mp4">
+                        mp4
+                      </label>
+                    </div>
+                    <div className="flex">
+                      <input
+                        className="ml-6"
+                        type="radio"
+                        name="format"
+                        id="webm"
+                        value="webm"
+                        onChange={() => {
+                          setVideo(null);
+                          setVideoType({
+                            quality: videoType.quality,
+                            format: "video/webm",
+                          });
+                        }}
+                      />
+                      <label className="ml-1" htmlFor="webm">
+                        webm
+                      </label>
+                    </div>
+                  </form>
+                </li>
+                <li>
+                  Audio format:{" "}
+                  <form className="flex flex-col justify-center items-start">
+                    <div className="flex">
+                      <input
+                        className="ml-6"
+                        type="radio"
+                        name="Audio format"
+                        id="m4a"
+                        value="m4a"
+                        onChange={() => {
+                          setAudio(null);
+                          setAudioType("audio/mp4");
+                        }}
+                      />
+                      <label className="ml-1" htmlFor="m4a">
+                        m4a
+                      </label>
+                    </div>
+                    <div className="flex">
+                      <input
+                        className="ml-6"
+                        type="radio"
+                        name="format"
+                        id="weba"
+                        value="weba"
+                        onChange={() => {
+                          setAudio(null);
+                          setAudioType("audio/webm");
+                        }}
+                      />
+                      <label className="ml-1" htmlFor="webm">
+                        webm
+                      </label>
+                    </div>
+                  </form>
                 </li>
               </ul>
             </div>
