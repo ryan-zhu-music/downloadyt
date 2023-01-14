@@ -1,3 +1,4 @@
+import React from "react";
 import Head from "next/head";
 import { useEffect, useState, CSSProperties } from "react";
 import { ImNewTab, ImSearch } from "react-icons/im";
@@ -15,6 +16,7 @@ export default function Home() {
   const [video, setVideo] = useState<any>(null);
   const [audio, setAudio] = useState<any>(null);
   const [allFormats, setAllFormats] = useState<any>(null);
+  const [availableFormats, setAvailableFormats] = useState<any>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [videoType, setVideoType] = useState({
@@ -76,13 +78,19 @@ export default function Home() {
   };
 
   useEffect(() => {
-    setVideo(
-      allFormats?.find(
-        (format: any) =>
-          format.mimeType.includes(videoType.format) &&
-          format.qualityLabel == videoType.quality
-      )
-    );
+    if (allFormats) {
+      const formats = allFormats?.filter((format: any) => {
+        if (format.mimeType.includes(videoType.format)) {
+          if (!qualities.includes(format.qualityLabel)) {
+            qualities.push(format.qualityLabel);
+            return true;
+          }
+        }
+        return false;
+      });
+      setAvailableFormats(formats);
+      setVideo(formats[0]);
+    }
   }, [videoType]);
 
   useEffect(() => {
@@ -90,6 +98,10 @@ export default function Home() {
       allFormats?.find((format: any) => format.mimeType.includes(audioType))
     );
   }, [audioType]);
+
+  console.log("video", video);
+  console.log("audio", audio);
+  console.log("allFormats", allFormats);
 
   const parseSeconds = (d: number) => {
     const h = String(Math.floor(d / 3600)).padStart(2, "0");
@@ -118,10 +130,10 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="w-screen min-h-screen flex flex-col items-center justify-center bg-[url('/background.png')] bg-cover bg-center px-10 md:px-20 lg:px-32 pt-32">
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-medium gradient-red text-transparent !bg-clip-text uppercase text-center">
-          Download<span className="font-bold">YT</span>
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold gradient-red text-transparent !bg-clip-text uppercase text-center">
+          Download<span className="text-white">YT</span>
         </h1>
-        <h2 className="text-xl md:text-2xl font-medium text-white text-center">
+        <h2 className="text-xl md:text-2xl font-medium text-light-red text-center mt-2">
           Download any YouTube video in video (mp4) or audio (m4a) format
           instantly!
         </h2>
@@ -214,9 +226,9 @@ export default function Home() {
                           });
                         }}
                       >
-                        {allFormats?.map((format: any, index: number) => {
+                        {availableFormats?.map((format: any, index: number) => {
                           if (
-                            format.mimeType.includes("video/mp4") &&
+                            format.mimeType.includes(videoType.format) &&
                             !qualities.includes(format.quality)
                           ) {
                             qualities.push(format.quality);
@@ -239,6 +251,7 @@ export default function Home() {
                             name="Video format"
                             id="mp4"
                             value="mp4"
+                            checked={videoType.format == "video/mp4"}
                             onChange={() => {
                               setVideo(null);
                               setVideoType({
@@ -255,9 +268,10 @@ export default function Home() {
                           <input
                             className="ml-6"
                             type="radio"
-                            name="format"
+                            name="Video format"
                             id="webm"
                             value="webm"
+                            checked={videoType.format == "video/webm"}
                             onChange={() => {
                               setVideo(null);
                               setVideoType({
@@ -282,6 +296,7 @@ export default function Home() {
                             name="Audio format"
                             id="m4a"
                             value="m4a"
+                            checked={audioType == "audio/mp4"}
                             onChange={() => {
                               setAudio(null);
                               setAudioType("audio/mp4");
@@ -295,16 +310,17 @@ export default function Home() {
                           <input
                             className="ml-6"
                             type="radio"
-                            name="format"
+                            name="Audio format"
                             id="weba"
                             value="weba"
+                            checked={audioType == "audio/webm"}
                             onChange={() => {
                               setAudio(null);
                               setAudioType("audio/webm");
                             }}
                           />
-                          <label className="ml-1" htmlFor="webm">
-                            webm
+                          <label className="ml-1" htmlFor="weba">
+                            weba
                           </label>
                         </div>
                       </form>
