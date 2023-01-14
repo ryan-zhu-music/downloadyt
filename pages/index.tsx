@@ -10,9 +10,11 @@ export default function Home() {
   const [metadata, setMetadata] = useState<any>(null);
   const [video, setVideo] = useState<any>(null);
   const [audio, setAudio] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
 
   const getVideo = () => {
     console.log("fetching", link);
+    setLoading(true);
     fetch("/api/getVideo", {
       method: "POST",
       headers: {
@@ -22,7 +24,7 @@ export default function Home() {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
+        setLoading(false);
         const metadata = data.response.videoDetails;
         const video = data.response.streamingData.formats[0];
         const audio = data.response.streamingData.adaptiveFormats.find(
@@ -51,17 +53,19 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="w-screen h-screen flex flex-col items-center justify-center">
-        <h1 className="text-6xl font-bold text-red-400">YouTube Downloader</h1>
-        <h2 className="text-2xl font-bold text-red-400">
+      <main className="w-screen min-h-screen flex flex-col items-center justify-center bg-[url('/background.png')] bg-cover bg-center px-5 md:px-16 lg:px-32 py-32">
+        <h1 className="text-7xl font-bold gradient-red text-transparent !bg-clip-text uppercase text-center">
+          YouTube Downloader
+        </h1>
+        <h2 className="text-2xl font-medium text-white text-center">
           Download any YouTube video in video (mp4) or audio (m4a) format!
         </h2>
-        <div className="w-5/6 md:w-[550px] h-14 mt-5 rounded-full gradient-purple p-[3px]">
+        <div className="w-5/6 md:w-[550px] h-14 mt-5 rounded-full gradient-red p-[3px]">
           <div className="w-full h-full rounded-full flex items-stretch justify-between flex-nowrap">
             <input
               type="text"
-              placeholder="e.g. https://musescore.com/user/34214067"
-              className="w-full text-gray-800 rounded-l-full pl-4 font-normal focus:outline-none placeholder:italic bg-indigo-100 focus:bg-white hover:bg-white duration-500"
+              placeholder="e.g. https://www.youtube.com/watch?v=fs-eur71DRA"
+              className="w-full text-white text-lg rounded-l-full pl-4 font-normal focus:outline-none placeholder:italic placeholder:text-light-red bg-dark-red focus:medium-red hover:medium-red duration-500"
               onChange={(e) => setLink(e.target.value.trim())}
               onKeyDown={(e) => {
                 if (e.key == "Enter") {
@@ -70,23 +74,56 @@ export default function Home() {
               }}
             />
             <button
-              className="w-14 text-3xl hover:w-20 duration-500 flex justify-center items-center rounded-r-full bg-[#7C75CF] text-white font-medium"
+              className="w-14 text-2xl hover:w-20 duration-500 flex justify-center items-center rounded-r-full bg-[#B93437] text-white font-medium"
               onClick={getVideo}
               name="Search"
             >
               <ImSearch />
             </button>
           </div>
-          {video && (
-            <video controls>
-              <source src={video.url} type="video/mp4" />
-            </video>
-          )}
-          {audio && (
-            <audio controls>
-              <source src={audio.url} type="audio/mp4" />
-            </audio>
-          )}
+        </div>
+        <div
+          className={
+            "w-full mt-10 grid grid-rows-2 md:grid-cols-2 md:grid-rows-1 gap-10 duration-500 ease-in-out " +
+            (!loading && !(video && audio && metadata)
+              ? "max-h-0 overflow-y-hidden"
+              : "max-h-[500px]")
+          }
+        >
+          <div className="w-full h-full p-2 gradient-red">
+            <div className="w-full h-full bg-dark-red p-4">
+              <h3 className="text-lg font-medium text-white">
+                {metadata?.title}
+              </h3>
+              <p className="text-sm text-light-red">
+                {metadata?.author}
+                <br />
+                {metadata?.lengthSeconds} seconds
+              </p>
+            </div>
+          </div>
+          <div className="w-full h-full">
+            {video && (
+              <div className="flex flex-col mb-7">
+                <h4 className="text-2xl font-semibold text-white">MP4 Video</h4>
+                <div className="p-2 gradient-red">
+                  <video controls>
+                    <source src={video.url} type="video/mp4" />
+                  </video>
+                </div>
+              </div>
+            )}
+            {audio && (
+              <div className="flex flex-col">
+                <h4 className="text-2xl font-semibold text-white">M4A Audio</h4>
+                <div className="p-2 gradient-red rounded-full">
+                  <audio controls className="w-full">
+                    <source src={audio.url} type="audio/mp4" />
+                  </audio>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </main>
     </>
