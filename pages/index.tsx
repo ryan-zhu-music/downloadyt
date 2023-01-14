@@ -116,18 +116,8 @@ export default function Home() {
         <title>DownloadYT</title>
         <meta
           name="description"
-          content="Download any YouTube video in video (mp4) or audio (m4a) format
-          instantly!"
+          content="Download any YouTube video in video (mp4) or audio (m4a) format instantly!"
         />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="author" content="Ryan Zhu" />
-        <meta name="keywords" content="download, youtube, video, audio" />
-        <meta name="theme-color" content="#B93437" />
-        <meta name="msapplication-navbutton-color" content="#B93437" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="#B93437" />
-        <meta name="msapplication-TileColor" content="#B93437" />
-        <meta name="msapplication-TileImage" content="/favicon.ico" />
-        <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="w-screen min-h-screen flex flex-col items-center justify-center bg-[url('/background.png')] bg-cover bg-center px-10 md:px-20 lg:px-32 pt-32">
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold gradient-red text-transparent !bg-clip-text uppercase text-center">
