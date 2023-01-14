@@ -32,7 +32,6 @@ export default function handler(
         data =
           data.split("var ytInitialPlayerResponse = ")[1].split("}}}};")[0] +
           "}}}}";
-        data = JSON.parse(data);
         res.status(200).json({ response: data });
       });
   } else {

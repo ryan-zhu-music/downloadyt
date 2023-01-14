@@ -41,11 +41,14 @@ export default function Home() {
     })
       .then((res) => res.json())
       .then((data) => {
+        console.log(data);
+        data = JSON.parse(data.response);
+        console.log(data);
         setLoading(false);
         setError("");
-        setMetadata(data.response.videoDetails);
-        setAllFormats(data.response.streamingData.adaptiveFormats);
-        const defaultVideo = data.response.streamingData.adaptiveFormats.find(
+        setMetadata(data.videoDetails);
+        setAllFormats(data.streamingData.adaptiveFormats);
+        const defaultVideo = data.streamingData.adaptiveFormats.find(
           (format: any) => {
             return format.mimeType.includes(videoType.format);
           }
@@ -56,13 +59,13 @@ export default function Home() {
           format: "video/mp4",
         });
         setAudio(
-          data.response.streamingData.adaptiveFormats.find((format: any) => {
+          data.streamingData.adaptiveFormats.find((format: any) => {
             return format.mimeType.includes(audioType);
           })
         );
       })
       .catch((err) => {
-        console.log("error", err);
+        console.log("Error:", err);
         setLoading(false);
         setError(
           "Something went wrong. Please try again later, or try a different video."
