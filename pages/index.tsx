@@ -1,11 +1,48 @@
-import Head from 'next/head'
-import Image from 'next/image'
-import { Inter } from '@next/font/google'
-import styles from '@/styles/Home.module.css'
+import Head from "next/head";
+import { useState } from "react";
+import { Inter } from "@next/font/google";
+import { ImSearch } from "react-icons/im";
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
+  const [link, setLink] = useState("");
+  const [metadata, setMetadata] = useState<any>(null);
+  const [video, setVideo] = useState<any>(null);
+  const [audio, setAudio] = useState<any>(null);
+
+  const getVideo = () => {
+    console.log("fetching", link);
+    fetch("/api/getVideo", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ url: link }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        const metadata = data.response.videoDetails;
+        const video = data.response.streamingData.formats[0];
+        const audio = data.response.streamingData.adaptiveFormats.find(
+          (format: any) => {
+            return format.mimeType.includes("audio/mp4");
+          }
+        );
+        console.log("metadata", metadata);
+        console.log("video", video);
+        console.log("audio", audio);
+
+        setMetadata(metadata);
+        setVideo(video);
+        setAudio(audio);
+      })
+      .catch((err) => {
+        console.log("error", err);
+      });
+  };
+
   return (
     <>
       <Head>
@@ -14,110 +51,44 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className={styles.main}>
-        <div className={styles.description}>
-          <p>
-            Get started by editing&nbsp;
-            <code className={styles.code}>pages/index.tsx</code>
-          </p>
-          <div>
-            <a
-              href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              By{' '}
-              <Image
-                src="/vercel.svg"
-                alt="Vercel Logo"
-                className={styles.vercelLogo}
-                width={100}
-                height={24}
-                priority
-              />
-            </a>
-          </div>
-        </div>
-
-        <div className={styles.center}>
-          <Image
-            className={styles.logo}
-            src="/next.svg"
-            alt="Next.js Logo"
-            width={180}
-            height={37}
-            priority
-          />
-          <div className={styles.thirteen}>
-            <Image
-              src="/thirteen.svg"
-              alt="13"
-              width={40}
-              height={31}
-              priority
+      <main className="w-screen h-screen flex flex-col items-center justify-center">
+        <h1 className="text-6xl font-bold text-red-400">YouTube Downloader</h1>
+        <h2 className="text-2xl font-bold text-red-400">
+          Download any YouTube video in video (mp4) or audio (m4a) format!
+        </h2>
+        <div className="w-5/6 md:w-[550px] h-14 mt-5 rounded-full gradient-purple p-[3px]">
+          <div className="w-full h-full rounded-full flex items-stretch justify-between flex-nowrap">
+            <input
+              type="text"
+              placeholder="e.g. https://musescore.com/user/34214067"
+              className="w-full text-gray-800 rounded-l-full pl-4 font-normal focus:outline-none placeholder:italic bg-indigo-100 focus:bg-white hover:bg-white duration-500"
+              onChange={(e) => setLink(e.target.value.trim())}
+              onKeyDown={(e) => {
+                if (e.key == "Enter") {
+                  getVideo();
+                }
+              }}
             />
+            <button
+              className="w-14 text-3xl hover:w-20 duration-500 flex justify-center items-center rounded-r-full bg-[#7C75CF] text-white font-medium"
+              onClick={getVideo}
+              name="Search"
+            >
+              <ImSearch />
+            </button>
           </div>
-        </div>
-
-        <div className={styles.grid}>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Docs <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Find in-depth information about Next.js features and&nbsp;API.
-            </p>
-          </a>
-
-          <a
-            href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Learn <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Learn about Next.js in an interactive course with&nbsp;quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Templates <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Discover and deploy boilerplate example Next.js&nbsp;projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Deploy <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Instantly deploy your Next.js site to a shareable URL
-              with&nbsp;Vercel.
-            </p>
-          </a>
+          {video && (
+            <video controls>
+              <source src={video.url} type="video/mp4" />
+            </video>
+          )}
+          {audio && (
+            <audio controls>
+              <source src={audio.url} type="audio/mp4" />
+            </audio>
+          )}
         </div>
       </main>
     </>
-  )
+  );
 }
